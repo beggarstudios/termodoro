@@ -5,11 +5,18 @@ import (
 	"os"
 
 	"github.com/charmbracelet/bubbles/spinner"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+
+	tea "github.com/charmbracelet/bubbletea"
+)
+
+const (
+	timerListView uint = iota
+	timerSettingsView
 )
 
 type model struct {
+	state   uint
 	options []string
 	cursor  int
 	spinner spinner.Model
@@ -38,7 +45,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 		}
-		break
+
 	default:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -80,6 +87,7 @@ func initialModel() model {
 		// Our pomodoro type menu options
 		// 25/5 = 25 minutes of work, 5 minutes of break
 		options: []string{"25/5", "45/15", "60/30"},
+		state:   timerListView,
 		spinner: s,
 	}
 }
