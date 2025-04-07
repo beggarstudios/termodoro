@@ -4,16 +4,19 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
 	options []string
 	cursor  int
+	spinner spinner.Model
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return m.spinner.Tick
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -35,6 +38,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor++
 			}
 		}
+		break
+	default:
+		var cmd tea.Cmd
+		m.spinner, cmd = m.spinner.Update(msg)
+		return m, cmd
 	}
 
 	// Return the updated model to the Bubble Tea runtime for processing.
@@ -49,7 +57,7 @@ func (m model) View() string {
 	for i, choice := range m.options {
 		cursor := " "
 		if m.cursor == i {
-			cursor = ">"
+			cursor = m.spinner.View()
 		}
 
 		// Render the row
@@ -64,10 +72,15 @@ func (m model) View() string {
 }
 
 func initialModel() model {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
 	return model{
 		// Our pomodoro type menu options
 		// 25/5 = 25 minutes of work, 5 minutes of break
 		options: []string{"25/5", "45/15", "60/30"},
+		spinner: s,
 	}
 }
 
