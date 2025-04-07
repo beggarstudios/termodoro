@@ -20,6 +20,7 @@ type model struct {
 	options []string
 	cursor  int
 	spinner spinner.Model
+	store   *Store
 }
 
 func (m model) Init() tea.Cmd {
@@ -78,7 +79,7 @@ func (m model) View() string {
 	return s
 }
 
-func initialModel() model {
+func newModel(store *Store) model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
@@ -89,11 +90,18 @@ func initialModel() model {
 		options: []string{"25/5", "45/15", "60/30"},
 		state:   timerListView,
 		spinner: s,
+		store:   store,
 	}
 }
 
 func main() {
-	p := tea.NewProgram(initialModel())
+	store := &Store{}
+
+	if err := store.Init(); err != nil {
+		fmt.Printf("Error initializing store: %v\n", err)
+	}
+
+	p := tea.NewProgram(newModel(store))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Error running program: %v\n", err)
 		os.Exit(1)
