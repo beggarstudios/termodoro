@@ -15,3 +15,7 @@ type SwitchModeInput interface {
 type MenuInput struct{}
 
 func (in *MenuInput) isSwitchModeInput() {}
+
+func NewMenuInput() *MenuInput {
+	return &MenuInput{}
+}
