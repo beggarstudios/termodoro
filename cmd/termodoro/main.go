@@ -1,110 +1,64 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/charmbracelet/bubbles/spinner"
-	"github.com/charmbracelet/lipgloss"
-
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/adrg/xdg"
+	"github.com/alecthomas/kong"
 )
 
-const (
-	timerListView uint = iota
-	timerSettingsView
-	timerView
-)
+type CLI struct {
+	StartupParameters
 
-type model struct {
-	state   uint
-	options []string
-	cursor  int
-	spinner spinner.Model
-	store   *Store
+	Menu StartCmd `cmd:"" help:"Start in the menu" default:"1"`
 }
 
-func (m model) Init() tea.Cmd {
-	return m.spinner.Tick
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		// Quit the program
-		case "ctrl+c", "q":
-			return m, tea.Quit
-
-		// Move the cursor up
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		// Move the cursor down
-		case "down", "j":
-			if m.cursor < len(m.options)-1 {
-				m.cursor++
-			}
-		}
-
-	default:
-		var cmd tea.Cmd
-		m.spinner, cmd = m.spinner.Update(msg)
-		return m, cmd
-	}
-
-	// Return the updated model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
-	return m, nil
-}
-
-func (m model) View() string {
-	// header
-	s := "Termodoro\n\n"
-
-	for i, choice := range m.options {
-		cursor := " "
-		if m.cursor == i {
-			cursor = m.spinner.View()
-		}
-
-		// Render the row
-		s += fmt.Sprintf("%s %s\n", cursor, choice)
-	}
-
-	// The footer
-	s += "\nPress q to quit.\n"
-
-	// Send the UI for rendering
-	return s
-}
-
-func newModel(store *Store) model {
-	s := spinner.New()
-	s.Spinner = spinner.Dot
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-
-	return model{
-		// Our pomodoro type menu options
-		// 25/5 = 25 minutes of work, 5 minutes of break
-		options: []string{"25/5", "45/15", "60/30"},
-		state:   timerListView,
-		spinner: s,
-		store:   store,
-	}
+type StartupParameters struct {
+	Config string `help:"Path to config file. Leaving this empty will use default XDG directory." default:""`
+	DB     string `help:"Path to the database file. Leaving this empty will use the default XDG directory." default:""`
 }
 
 func main() {
-	store := &Store{}
+	cli := CLI{}
+	ctx := kong.Parse(&cli,
+		kong.Name("termodoro"),
+		kong.Description("A pomodoro timer TUI written in Go"),
+		kong.UsageOnError(),
+	)
 
-	if err := store.Init(); err != nil {
-		fmt.Printf("Error initializing store: %v\n", err)
+	if err := handleDefaultGlobals(&cli.StartupParameters); err != nil {
+		ctx.FatalIfErrorf(err)
 	}
 
-	p := tea.NewProgram(newModel(store))
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Error running program: %v\n", err)
-		os.Exit(1)
+	// Call the Run() method of the selected parsed command.
+	err := ctx.Run(&cli.StartupParameters)
+	ctx.FatalIfErrorf(err)
+
+	// store := &Store{}
+
+	// if err := store.Init(); err != nil {
+	// 	fmt.Printf("Error initializing store: %v\n", err)
+	// }
+
+	// p := tea.NewProgram(newModel(store))
+	// if _, err := p.Run(); err != nil {
+	// 	fmt.Printf("Error running program: %v\n", err)
+	// 	os.Exit(1)
+	// }
+}
+
+func handleDefaultGlobals(g *StartupParameters) error {
+	if g.Config == "" {
+		var err error
+		g.Config, err = xdg.ConfigFile("./tetrigo/config.toml")
+		if err != nil {
+			return err
+		}
 	}
+	if g.DB == "" {
+		var err error
+		g.DB, err = xdg.DataFile("./tetrigo/tetrigo.db")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

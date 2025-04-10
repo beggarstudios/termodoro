@@ -5,6 +5,8 @@ go 1.24.2
 require github.com/charmbracelet/bubbletea v1.3.4
 
 require (
+	github.com/adrg/xdg v0.5.3
+	github.com/alecthomas/kong v1.10.0
 	github.com/charmbracelet/bubbles v0.12.0
 	github.com/charmbracelet/lipgloss v1.1.0
 )
