@@ -13,6 +13,7 @@ import (
 const (
 	timerListView uint = iota
 	timerSettingsView
+	timerView
 )
 
 type model struct {

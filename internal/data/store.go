@@ -1,4 +1,4 @@
-package main
+package data
 
 import (
 	"database/sql"
@@ -71,7 +71,7 @@ func (s *Store) saveProfile(profile Profile) error {
 	query := `INSERT INTO profiles (id, title) VALUES (?, ?)`
 
 	if _, err := s.conn.Exec(query, profile.ID, profile.Name); err != nil {
-		return nil
+		return err
 	}
 
 	return nil
