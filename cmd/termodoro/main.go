@@ -28,34 +28,21 @@ func main() {
 		ctx.FatalIfErrorf(err)
 	}
 
-	// Call the Run() method of the selected parsed command.
 	err := ctx.Run(&cli.StartupParameters)
 	ctx.FatalIfErrorf(err)
-
-	// store := &Store{}
-
-	// if err := store.Init(); err != nil {
-	// 	fmt.Printf("Error initializing store: %v\n", err)
-	// }
-
-	// p := tea.NewProgram(newModel(store))
-	// if _, err := p.Run(); err != nil {
-	// 	fmt.Printf("Error running program: %v\n", err)
-	// 	os.Exit(1)
-	// }
 }
 
 func handleDefaultGlobals(g *StartupParameters) error {
 	if g.Config == "" {
 		var err error
-		g.Config, err = xdg.ConfigFile("./tetrigo/config.toml")
+		g.Config, err = xdg.ConfigFile("./termodoro/config.toml")
 		if err != nil {
 			return err
 		}
 	}
 	if g.DB == "" {
 		var err error
-		g.DB, err = xdg.DataFile("./tetrigo/tetrigo.db")
+		g.DB, err = xdg.DataFile("./termodoro/termodoro.db")
 		if err != nil {
 			return err
 		}

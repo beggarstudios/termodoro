@@ -3,8 +3,10 @@ package views
 import (
 	"fmt"
 
-	"termodoro/internal/data"
+	"termodoro/internal/tui"
 
+	"github.com/charmbracelet/bubbles/help"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/lipgloss"
 
@@ -19,24 +21,25 @@ import (
 
 const (
 	titleStr = `
- _________  _______   ________  _____ ______   ________  ________  ________  ________  ________     
-|\___   ___\\  ___ \ |\   __  \|\   _ \  _   \|\   __  \|\   ___ \|\   __  \|\   __  \|\   __  \    
-\|___ \  \_\ \   __/|\ \  \|\  \ \  \\\__\ \  \ \  \|\  \ \  \_|\ \ \  \|\  \ \  \|\  \ \  \|\  \   
-     \ \  \ \ \  \_|/_\ \   _  _\ \  \\|__| \  \ \  \\\  \ \  \ \\ \ \  \\\  \ \   _  _\ \  \\\  \  
-      \ \  \ \ \  \_|\ \ \  \\  \\ \  \    \ \  \ \  \\\  \ \  \_\\ \ \  \\\  \ \  \\  \\ \  \\\  \ 
-       \ \__\ \ \_______\ \__\\ _\\ \__\    \ \__\ \_______\ \_______\ \_______\ \__\\ _\\ \_______\
-        \|__|  \|_______|\|__|\|__|\|__|     \|__|\|_______|\|_______|\|_______|\|__|\|__|\|_______|                                                                                                                                                                                                    
+___________                             .___                   
+\__    ___/__________  _____   ____   __| _/___________  ____  
+  |    |_/ __ \_  __ \/     \ /  _ \ / __ |/  _ \_  __ \/  _ \ 
+  |    |\  ___/|  | \/  Y Y  (  <_> ) /_/ (  <_> )  | \(  <_> )
+  |____| \___  >__|  |__|_|  /\____/\____ |\____/|__|   \____/ 
+             \/            \/            \/                                                                                                                                                                                                          
+
+
 `
 )
 
 var _ tea.Model = &MenuModel{}
 
 type MenuModel struct {
-	//state   uint
 	options []string
 	cursor  int
+	keys    *menuKeyMap
+	help    help.Model
 	spinner spinner.Model
-	store   *data.Store
 }
 
 func (m MenuModel) Init() tea.Cmd {
@@ -46,18 +49,20 @@ func (m MenuModel) Init() tea.Cmd {
 func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		// Quit the program
-		case "ctrl+c", "q":
+		switch {
+
+		case key.Matches(msg, m.keys.Help):
+			m.help.ShowAll = !m.help.ShowAll
+
+		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
 
-		// Move the cursor up
-		case "up", "k":
+		case key.Matches(msg, m.keys.Up):
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		// Move the cursor down
-		case "down", "j":
+
+		case key.Matches(msg, m.keys.Down):
 			if m.cursor < len(m.options)-1 {
 				m.cursor++
 			}
@@ -76,36 +81,44 @@ func (m MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m MenuModel) View() string {
 	// header
-	s := "Termodoro\n\n"
+	s := titleStr
 
 	for i, choice := range m.options {
 		cursor := " "
 		if m.cursor == i {
-			cursor = m.spinner.View()
+			cursor = ">"
+			//cursor = m.spinner.View()
 		}
 
 		// Render the row
 		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
 
+	helpView := m.help.View(m.keys)
+
 	// The footer
-	s += "\nPress q to quit.\n"
+	s += "\n\n"
+
+	s += helpView
 
 	// Send the UI for rendering
 	return s
 }
 
-func NewMenuModel() MenuModel {
+func NewMenuModel(_ *tui.MenuInput) MenuModel {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
 	return MenuModel{
-		// Our pomodoro type menu options
-		// 25/5 = 25 minutes of work, 5 minutes of break
-		options: []string{"25/5", "45/15", "60/30"},
-		//state:   timerListView,
+		options: []string{
+			"Timers",
+			"Settings",
+			"Rewards",
+			"Quit",
+		},
+		keys:    defaultMenuKeyMap(),
+		help:    help.New(),
 		spinner: s,
-		//store:   store,
 	}
 }
