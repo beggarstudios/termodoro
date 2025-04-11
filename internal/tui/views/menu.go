@@ -32,6 +32,23 @@ ___________                             .___
 `
 )
 
+// General stuff for styling the view
+var (
+	keywordStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("211"))
+	subtleStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	ticksStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("79"))
+	checkboxStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("212"))
+	//progressEmpty = subtleStyle.Render(progressEmptyChar)
+	//dotStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("236")).Render(dotChar)
+	mainStyle = lipgloss.NewStyle().MarginLeft(2)
+
+	selectedStyle = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("219"))
+	menuItemStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("219"))
+
+	// Gradient colors we'll use for the progress bar
+	//ramp = makeRampStyles("#B14FFF", "#00FFA3", progressBarWidth)
+)
+
 var _ tea.Model = &MenuModel{}
 
 type MenuModel struct {
@@ -86,12 +103,14 @@ func (m MenuModel) View() string {
 	for i, choice := range m.options {
 		cursor := " "
 		if m.cursor == i {
-			cursor = ">"
-			//cursor = m.spinner.View()
+			cursor = keywordStyle.Render("➤")
+			// Render the row
+			s += fmt.Sprintf("%s %s\n", cursor, selectedStyle.Render(choice))
+		} else {
+			// Render the row
+			s += fmt.Sprintf("%s %s\n", cursor, mainStyle.Render(choice))
 		}
 
-		// Render the row
-		s += fmt.Sprintf("%s %s\n", cursor, choice)
 	}
 
 	helpView := m.help.View(m.keys)
