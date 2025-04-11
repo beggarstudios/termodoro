@@ -13,10 +13,10 @@ import (
 type StartCmd struct{}
 
 func (c *StartCmd) Run(params *StartupParameters) error {
-	return launchStarter(params, tui.MenuView, tui.NewMenuInput())
+	return launchRoot(params, tui.MenuView, tui.NewMenuInput())
 }
 
-func launchStarter(globals *StartupParameters, starterView tui.View, switchIn tui.SwitchViewInput) error {
+func launchRoot(globals *StartupParameters, starterView tui.View, switchIn tui.SwitchViewInput) error {
 	db, err := data.InitializeStore(globals.DB)
 	if err != nil {
 		return fmt.Errorf("opening database: %w", err)
