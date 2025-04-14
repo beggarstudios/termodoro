@@ -5,6 +5,8 @@ import (
 	"github.com/alecthomas/kong"
 )
 
+// Build command: go build -o termodoro.exe .
+
 type CLI struct {
 	StartupParameters
 

@@ -7,10 +7,24 @@ import (
 	"reflect"
 	"termodoro/internal/config"
 	"termodoro/internal/tui"
-	"termodoro/internal/tui/views"
+	"termodoro/internal/tui/views/menu"
+	"termodoro/internal/tui/views/timerlist"
 
 	"github.com/Broderick-Westrope/charmutils"
 	tea "github.com/charmbracelet/bubbletea"
+)
+
+const (
+	titleStr = `
+___________                             .___                   
+\__    ___/__________  _____   ____   __| _/___________  ____  
+  |    |_/ __ \_  __ \/     \ /  _ \ / __ |/  _ \_  __ \/  _ \ 
+  |    |\  ___/|  | \/  Y Y  (  <_> ) /_/ (  <_> )  | \(  <_> )
+  |____| \___  >__|  |__|_|  /\____/\____ |\____/|__|   \____/ 
+             \/            \/            \/                                                                                                                                                                                                          
+
+
+`
 )
 
 type Input struct {
@@ -81,7 +95,7 @@ func (m *RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *RootModel) View() string {
-	return m.child.View()
+	return titleStr + m.child.View()
 }
 
 func (m *RootModel) initChild() tea.Cmd {
@@ -104,9 +118,29 @@ func (m *RootModel) setChild(mode tui.View, switchIn tui.SwitchViewInput) error 
 		if !ok {
 			return fmt.Errorf("switchIn is not a MenuInput: %w", charmutils.ErrInvalidTypeAssertion)
 		}
-		m.child = views.NewMenuModel(menuIn)
+		m.child = menu.NewMenuModel(menuIn)
+	case tui.TimerListView:
+		menuIn, ok := switchIn.(*tui.TimerListInput)
+		if !ok {
+			return fmt.Errorf("switchIn is not a TimerListInput: %w", charmutils.ErrInvalidTypeAssertion)
+		}
+		var err error
+		m.child, err = timerlist.NewTimerListModel(menuIn, m.db)
+		if err != nil {
+			return err
+		}
+	case tui.TimerListAddView:
+		menuIn, ok := switchIn.(*tui.TimerListAddInput)
+		if !ok {
+			return fmt.Errorf("switchIn is not a TimerListAddInput: %w", charmutils.ErrInvalidTypeAssertion)
+		}
+		var err error
+		m.child, err = timerlist.NewTimerListAddModel(menuIn, m.db)
+		if err != nil {
+			return err
+		}
 	default:
-		return errors.New("invalid Mode")
+		return errors.New("invalid view")
 	}
 	return nil
 }

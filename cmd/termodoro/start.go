@@ -16,13 +16,13 @@ func (c *StartCmd) Run(params *StartupParameters) error {
 	return launchRoot(params, tui.MenuView, tui.NewMenuInput())
 }
 
-func launchRoot(globals *StartupParameters, starterView tui.View, switchIn tui.SwitchViewInput) error {
-	db, err := data.InitializeStore(globals.DB)
+func launchRoot(params *StartupParameters, starterView tui.View, switchIn tui.SwitchViewInput) error {
+	db, err := data.OpenDatabaseConnection(params.DB)
 	if err != nil {
 		return fmt.Errorf("opening database: %w", err)
 	}
 
-	cfg, err := config.GetConfig(globals.Config)
+	cfg, err := config.GetConfig(params.Config)
 	if err != nil {
 		return fmt.Errorf("getting config: %w", err)
 	}
