@@ -100,7 +100,6 @@ func (m TimerListModel) View() string {
 
 func NewTimerListModel(_ *tui.TimerListInput, db *sql.DB) (TimerListModel, error) {
 	repo := data.NewTimerRepositorySQLite(db)
-	//repo := data.NewTimerRepositoryMock(db)
 	timers, err := repo.GetAllTimers()
 
 	if err != nil {
@@ -108,7 +107,7 @@ func NewTimerListModel(_ *tui.TimerListInput, db *sql.DB) (TimerListModel, error
 	}
 
 	return TimerListModel{
-		keys:    defaultMenuKeyMap(),
+		keys:    defaultTimerListKeyMap(),
 		help:    help.New(),
 		spinner: spinner.New(),
 		repo:    repo,

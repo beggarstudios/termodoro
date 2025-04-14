@@ -26,7 +26,7 @@ func (k timerlistKeyMap) FullHelp() [][]key.Binding {
 	}
 }
 
-func defaultMenuKeyMap() *timerlistKeyMap {
+func defaultTimerListKeyMap() *timerlistKeyMap {
 	keys := &timerlistKeyMap{
 		Exit:   key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
 		Help:   key.NewBinding(key.WithKeys("h"), key.WithHelp("h", "help")),
@@ -36,6 +36,37 @@ func defaultMenuKeyMap() *timerlistKeyMap {
 		Quit:   key.NewBinding(key.WithKeys("q"), key.WithHelp("q", "quit")),
 		New:    key.NewBinding(key.WithKeys("n"), key.WithHelp("n", "new")),
 		Edit:   key.NewBinding(key.WithKeys("e"), key.WithHelp("e", "edit")),
+	}
+
+	return keys
+}
+
+// ADD SCREEN KEYS
+
+type timerlistAddKeyMap struct {
+	Exit key.Binding
+	Help key.Binding
+	Up   key.Binding
+	Down key.Binding
+}
+
+func (k timerlistAddKeyMap) ShortHelp() []key.Binding {
+	return []key.Binding{k.Up, k.Down, k.Help}
+}
+
+func (k timerlistAddKeyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Help},
+		{k.Exit},
+	}
+}
+
+func defaultTimerListAddKeyMap() *timerlistAddKeyMap {
+	keys := &timerlistAddKeyMap{
+		Exit: key.NewBinding(key.WithKeys("esc"), key.WithHelp("esc", "exit")),
+		Help: key.NewBinding(key.WithKeys("h"), key.WithHelp("ctrl+h", "help")),
+		Up:   key.NewBinding(key.WithKeys("up"), key.WithHelp("↑", "move up")),
+		Down: key.NewBinding(key.WithKeys("down"), key.WithHelp("↓", "move down")),
 	}
 
 	return keys
